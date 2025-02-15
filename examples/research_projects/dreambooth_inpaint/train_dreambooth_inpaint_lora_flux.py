@@ -1963,10 +1963,6 @@ def main(args):
                     text_encoder_two.to(weight_dtype)
                 pipeline = FluxFillPipeline.from_pretrained(
                     args.pretrained_model_name_or_path,
-                    vae=vae,
-                    text_encoder=accelerator.unwrap_model(text_encoder_one),
-                    text_encoder_2=accelerator.unwrap_model(text_encoder_two),
-                    transformer=accelerator.unwrap_model(transformer),
                     revision=args.revision,
                     variant=args.variant,
                     torch_dtype=weight_dtype,
