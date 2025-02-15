@@ -384,7 +384,7 @@ def parse_args(input_args=None):
         help="Path to a validation image to use for validation.",
     )
     parser.add_argument(
-        "--validation_image_mask",
+        "--validation_mask_path",
         type=str,
         default=None,
         help="Path to a validation image mask to use for validation. If not provided, a full mask will be used.",
