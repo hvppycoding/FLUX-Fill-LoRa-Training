@@ -233,6 +233,8 @@ def log_validation(
         )
         pipeline_args["prompt_embeds"] = prompt_embeds
         pipeline_args["pooled_prompt_embeds"] = pooled_prompt_embeds
+        if "prompt" in pipeline_args:
+            del pipeline_args["prompt"]
     # autocast_ctx = nullcontext()
 
     with autocast_ctx:
@@ -251,6 +253,10 @@ def log_validation(
                     ]
                 }
             )
+            
+    if not is_final_validation:
+        del pipeline_args["prompt_embeds"]
+        del pipeline_args["pooled_prompt_embeds"]
 
     del pipeline
     if torch.cuda.is_available():
@@ -1969,10 +1975,8 @@ def main(args):
                 else:
                     val_mask = random_mask(val_image.size, ratio=1, mask_full_image=True)
                 
-                pipeline_args = {
-                    "image": val_image, 
-                    "mask_image": val_mask
-                }
+                pipeline_args = {"prompt": args.validation_prompt, "image": val_image, "mask_image": val_mask}
+                
                 images = log_validation(
                     pipeline=pipeline,
                     args=args,
@@ -1986,9 +1990,8 @@ def main(args):
                     free_memory()
 
                 images = None
-                del pipeline_args
+                
                 del pipeline
-                free_memory()
                 logger.info("***** Finishing validation *****")
 
     # Save the lora layers
