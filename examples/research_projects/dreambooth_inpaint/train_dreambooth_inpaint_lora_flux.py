@@ -1986,7 +1986,9 @@ def main(args):
                     free_memory()
 
                 images = None
+                del pipeline_args
                 del pipeline
+                free_memory()
                 logger.info("***** Finishing validation *****")
 
     # Save the lora layers
