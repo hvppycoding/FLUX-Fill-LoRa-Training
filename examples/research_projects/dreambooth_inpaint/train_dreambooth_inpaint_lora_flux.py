@@ -1953,7 +1953,7 @@ def main(args):
                     revision=args.revision,
                     variant=args.variant,
                     torch_dtype=weight_dtype,
-                )
+                ).to(accelerator.device)
                 val_image = load_image(args.validation_image_path)
                 if args.validation_mask_path:
                     val_mask = load_image(args.validation_mask_path)
@@ -1961,6 +1961,7 @@ def main(args):
                     val_mask = random_mask(val_image.size, ratio=1, mask_full_image=True)
                 
                 # https://github.com/huggingface/diffusers/pull/9549#issuecomment-2388677554
+                # pre calculate  prompt embeds, pooled prompt embeds, text ids because t5 does not support autocast
                 prompt_embeds, pooled_prompt_embeds, text_ids = pipeline.encode_prompt(
                    args.validation_prompt, prompt_2=args.validation_prompt
                 )
