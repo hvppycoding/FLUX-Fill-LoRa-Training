@@ -1959,8 +1959,17 @@ def main(args):
                     val_mask = load_image(args.validation_mask_path)
                 else:
                     val_mask = random_mask(val_image.size, ratio=1, mask_full_image=True)
-
-                pipeline_args = {"prompt": args.validation_prompt, "image": val_image, "mask_image": val_mask}
+                
+                # https://github.com/huggingface/diffusers/pull/9549#issuecomment-2388677554
+                prompt_embeds, pooled_prompt_embeds, text_ids = pipeline.encode_prompt(
+                   args.validation_prompt, prompt_2=args.validation_prompt
+                )
+                pipeline_args = {
+                    "prompt_embeds": prompt_embeds,
+                    "pooled_prompt_embeds": pooled_prompt_embeds,
+                    "image": val_image, 
+                    "mask_image": val_mask
+                }
                 images = log_validation(
                     pipeline=pipeline,
                     args=args,
