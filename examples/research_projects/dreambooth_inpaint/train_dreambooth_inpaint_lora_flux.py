@@ -1753,25 +1753,12 @@ def main(args):
                     batch["masked_images"].reshape(batch["pixel_values"].shape).to(dtype=weight_dtype)
                 ).latent_dist.sample()
                 masked_image_latents = (masked_image_latents - vae.config.shift_factor) * vae.config.scaling_factor
-                # print("masked image latents", masked_image_latents.shape)
 
                 masks = batch["masks"]
-                # print("masks ", masks.shape)
-                # print("mask  ", masks )
-                # print("scale", vae_scale_factor)
-                # print("scale", args.resolution)
-                # print("scale", model_input.shape[2])
 
                 mask = masks
-                # resize the mask to latents shape as we concatenate the mask to the latents
-                """ mask = torch.stack(
-                    [
-                        torch.nn.functional.interpolate(mask, size=(args.resolution // 8, args.resolution // 8))
-                        for mask in masks
-                    ]
-                ).to(dtype=weight_dtype)
-                mask = mask.reshape(-1, 1, args.resolution // 8, args.resolution // 8) """
-                 # 5.resize mask to latents shape we we concatenate the mask to the latents
+
+                # 5.resize mask to latents shape we we concatenate the mask to the latents
                 mask = mask[:, 0, :, :]  # batch_size, 8 * height, 8 * width (mask has not been 8x compressed)
                 mask = mask.view(
                     model_input.shape[0], model_input.shape[2], vae_scale_factor, model_input.shape[3], vae_scale_factor
@@ -1779,10 +1766,8 @@ def main(args):
                 mask = mask.permute(0, 2, 4, 1, 3)  # batch_size, 8, 8, height, width
                 mask = mask.reshape(
                     model_input.shape[0], vae_scale_factor * vae_scale_factor, model_input.shape[2], model_input.shape[3]
-                )  # ba
-                # print("mask ", mask.shape)
-
-
+                )  # batch_size, 8*8, height, width
+                
                 latent_image_ids = FluxFillPipeline._prepare_latent_image_ids(
                     model_input.shape[0],
                     model_input.shape[2] // 2,
@@ -1836,6 +1821,9 @@ def main(args):
                 # print("packed masked image latents", masked_image_latents.shape)
                 # print("model input", model_input)
                 # print("model inputh shape", model_input.shape)
+                
+                # 6. pack the mask:
+                # batch_size, 64, height, width -> batch_size, height//2 * width//2 , 64*2*2
                 mask = FluxFillPipeline._pack_latents(
                     mask,
                     batch_size=model_input.shape[0],
@@ -1843,14 +1831,9 @@ def main(args):
                     height=model_input.shape[2],
                     width=model_input.shape[3],
                 )
-                # print("packed mask ", mask.shape)
                 
                 masked_image_latents = torch.cat((masked_image_latents, mask), dim=-1)
-                # print("concat masked image latents", masked_image_latents.shape)     
-                    
                 transformer_input = torch.cat((packed_noisy_model_input, masked_image_latents), dim=2)    
-                # print(packed_noisy_model_input.shape)
-                # print("hidden states latents", transformer_input.shape)
 
                 # Predict the noise residual
                 model_pred = transformer(
@@ -1963,6 +1946,10 @@ def main(args):
                     text_encoder_two.to(weight_dtype)
                 pipeline = FluxFillPipeline.from_pretrained(
                     args.pretrained_model_name_or_path,
+                    vae=vae,
+                    text_encoder_one=accelerator.unwrap_model(text_encoder_one),
+                    text_encoder_two=accelerator.unwrap_model(text_encoder_two),
+                    transformer=accelerator.unwrap_model(transformer),
                     revision=args.revision,
                     variant=args.variant,
                     torch_dtype=weight_dtype,
