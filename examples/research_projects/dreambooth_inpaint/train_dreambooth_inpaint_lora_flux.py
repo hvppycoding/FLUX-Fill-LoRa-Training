@@ -853,7 +853,7 @@ class DreamBoothDataset(Dataset):
             else:
                 y1, x1, h, w = train_crop.get_params(image, (args.resolution, args.resolution))
                 image = crop(image, y1, x1, h, w)
-            self.pil_images.append(image.clone().detach())
+            self.pil_images.append(image.copy())
             image = train_transforms(image)
             self.pixel_values.append(image)
 
