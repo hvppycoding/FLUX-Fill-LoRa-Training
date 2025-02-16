@@ -2013,6 +2013,7 @@ def main(args):
 
         # Final inference
         # Load previous pipeline
+        logger.info("***** Running final inference *****")
         pipeline = FluxFillPipeline.from_pretrained(
             args.pretrained_model_name_or_path,
             revision=args.revision,
@@ -2041,8 +2042,10 @@ def main(args):
                 is_final_validation=True,
                 torch_dtype=weight_dtype,
             )
+        logger.info("***** Finishing final inference *****")
 
         if args.push_to_hub:
+            logger.info("***** Saving model card *****")
             save_model_card(
                 repo_id,
                 images=images,
@@ -2052,12 +2055,16 @@ def main(args):
                 validation_prompt=args.validation_prompt,
                 repo_folder=args.output_dir,
             )
+            logger.info("***** Model card saved *****")
+            
+            logger.info("***** Uploading model to the hub *****")
             upload_folder(
                 repo_id=repo_id,
                 folder_path=args.output_dir,
                 commit_message="End of training",
                 ignore_patterns=["step_*", "epoch_*"],
             )
+            logger.info("***** Model uploaded *****")
 
         images = None
         del pipeline
