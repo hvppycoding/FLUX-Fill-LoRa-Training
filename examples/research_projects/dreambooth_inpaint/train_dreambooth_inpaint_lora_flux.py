@@ -225,6 +225,14 @@ def log_validation(
     # run inference
     generator = torch.Generator(device=accelerator.device).manual_seed(args.seed) if args.seed else None
     autocast_ctx = torch.autocast(accelerator.device.type) if not is_final_validation else nullcontext()
+    if not is_final_validation:
+        # https://github.com/huggingface/diffusers/pull/9549#issuecomment-2388677554
+        # pre calculate  prompt embeds, pooled prompt embeds, text ids because t5 does not support autocast
+        prompt_embeds, pooled_prompt_embeds, text_ids = pipeline.encode_prompt(
+            args.validation_prompt, prompt_2=args.validation_prompt
+        )
+        pipeline_args["prompt_embeds"] = prompt_embeds
+        pipeline_args["pooled_prompt_embeds"] = pooled_prompt_embeds
     # autocast_ctx = nullcontext()
 
     with autocast_ctx:
@@ -1954,21 +1962,14 @@ def main(args):
                     revision=args.revision,
                     variant=args.variant,
                     torch_dtype=weight_dtype,
-                ).to(accelerator.device)
+                )
                 val_image = load_image(args.validation_image_path)
                 if args.validation_mask_path:
                     val_mask = load_image(args.validation_mask_path)
                 else:
                     val_mask = random_mask(val_image.size, ratio=1, mask_full_image=True)
                 
-                # https://github.com/huggingface/diffusers/pull/9549#issuecomment-2388677554
-                # pre calculate  prompt embeds, pooled prompt embeds, text ids because t5 does not support autocast
-                prompt_embeds, pooled_prompt_embeds, text_ids = pipeline.encode_prompt(
-                   args.validation_prompt, prompt_2=args.validation_prompt
-                )
                 pipeline_args = {
-                    "prompt_embeds": prompt_embeds,
-                    "pooled_prompt_embeds": pooled_prompt_embeds,
                     "image": val_image, 
                     "mask_image": val_mask
                 }
@@ -1986,7 +1987,6 @@ def main(args):
 
                 images = None
                 del pipeline
-                free_memory()
                 logger.info("***** Finishing validation *****")
 
     # Save the lora layers
