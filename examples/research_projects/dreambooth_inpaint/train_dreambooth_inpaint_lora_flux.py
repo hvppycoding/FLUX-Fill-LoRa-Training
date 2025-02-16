@@ -1939,6 +1939,7 @@ def main(args):
 
         if accelerator.is_main_process:
             if args.validation_prompt is not None and epoch % args.validation_epochs == 0:
+                logger.info("***** Running validation *****")
                 # create pipeline
                 if not args.train_text_encoder:
                     text_encoder_one, text_encoder_two = load_text_encoders(text_encoder_cls_one, text_encoder_cls_two)
@@ -1985,6 +1986,7 @@ def main(args):
 
                 images = None
                 del pipeline
+                logger.info("***** Finishing validation *****")
 
     # Save the lora layers
     accelerator.wait_for_everyone()
