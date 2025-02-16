@@ -224,7 +224,7 @@ def log_validation(
 
     # run inference
     generator = torch.Generator(device=accelerator.device).manual_seed(args.seed) if args.seed else None
-    #autocast_ctx = torch.autocast(accelerator.device.type) if not is_final_validation else nullcontext()
+    # autocast_ctx = torch.autocast(accelerator.device.type) if not is_final_validation else nullcontext()
     autocast_ctx = nullcontext()
 
     with autocast_ctx:
@@ -853,7 +853,7 @@ class DreamBoothDataset(Dataset):
             else:
                 y1, x1, h, w = train_crop.get_params(image, (args.resolution, args.resolution))
                 image = crop(image, y1, x1, h, w)
-            self.pil_images.append(copy.deepcopy(image))
+            self.pil_images.append(image.clone().detach())
             image = train_transforms(image)
             self.pixel_values.append(image)
 
@@ -1947,8 +1947,8 @@ def main(args):
                 pipeline = FluxFillPipeline.from_pretrained(
                     args.pretrained_model_name_or_path,
                     vae=vae,
-                    text_encoder_one=accelerator.unwrap_model(text_encoder_one),
-                    text_encoder_two=accelerator.unwrap_model(text_encoder_two),
+                    text_encoder=accelerator.unwrap_model(text_encoder_one),
+                    text_encoder_2=accelerator.unwrap_model(text_encoder_two),
                     transformer=accelerator.unwrap_model(transformer),
                     revision=args.revision,
                     variant=args.variant,
