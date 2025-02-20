@@ -15,7 +15,7 @@ limitations under the License.
 -->
 # FLUX-Fill-LoRa-Training
 
-This repository provides a fork of the [🤗 Diffusers](https://github.com/huggingface/diffusers) and library with an example script for LoRA training on the new **FLUX.1-Fill** models. The script isn't optimized and was just tested on an NVIDIA A100 GPU. If anyone has a similar script for frameworks like SimpleTuner or SD-scripts, that run on consumer hardware, I would be more than happy to hear!
+This repository provides a fork of the [Sebastian-Zok/FLUX-Fill-LoRa-Training](https://github.com/Sebastian-Zok/FLUX-Fill-LoRa-Training), [🤗 Diffusers](https://github.com/huggingface/diffusers) and library with an example script for LoRA training on the new **FLUX.1-Fill** models. The script isn't optimized and was just tested on an NVIDIA A100 GPU. If anyone has a similar script for frameworks like SimpleTuner or SD-scripts, that run on consumer hardware, I would be more than happy to hear!
 
 ## Overview
 
