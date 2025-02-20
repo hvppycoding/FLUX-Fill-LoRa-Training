@@ -15,23 +15,11 @@ limitations under the License.
 -->
 # FLUX-Fill-LoRa-Training
 
-This repository provides a fork of the [🤗 Diffusers](https://github.com/huggingface/diffusers) library with an example script for LoRA training on the new **FLUX.1-Fill** models. The script isn't optimized and was just tested on an NVIDIA A100 GPU. If anyone has a similar script for frameworks like SimpleTuner or SD-scripts, that run on consumer hardware, I would be more than happy to hear!
+This repository provides a fork of the [🤗 Diffusers](https://github.com/huggingface/diffusers) and library with an example script for LoRA training on the new **FLUX.1-Fill** models. The script isn't optimized and was just tested on an NVIDIA A100 GPU. If anyone has a similar script for frameworks like SimpleTuner or SD-scripts, that run on consumer hardware, I would be more than happy to hear!
 
 ## Overview
 
-The provided script implements a specific masking strategy, in my case applying a mask to the right half of the image. If your use case requires a different masking approach, you’ll need to adapt the `random_mask` function accordingly.
-
-**Note:**  
-Validation images and masks are currently hardcoded in the script. You will need to modify these to suit your dataset. See the lines:
-
-```python
-val_image = load_image("https://huggingface.co/datasets/sebastianzok/validationImageAndMask/resolve/main/image.png")
-val_mask = load_image("https://huggingface.co/datasets/sebastianzok/validationImageAndMask/resolve/main/mask.png")
-```
-Known Issue
-Validation only works at the start and end of training. During intermediate validation steps, only black images occur ([See this open issue](https://github.com/huggingface/diffusers/issues/9476)). Luckily the LoRa was able to catch my concept just with 300 steps, so I did not really depend on the validation images.
-
-
+The provided script implements a specific masking strategy, in my case applying a full mask to the image. If your use case requires a different masking approach, you’ll need to adapt the `random_mask` function accordingly.
 
 ## Installation
 
